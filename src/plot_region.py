@@ -52,3 +52,38 @@ class PlotRegion:
         g.fig.subplots_adjust(wspace=.1, hspace=.6)
         g.fig.set_size_inches(17/2.54, 20/2.54)
         return g
+
+    def pie_jregion(self, ax, params):
+        # counts
+        cdf = self.df[self.df['isotype']=='IG']
+        cdf = cdf[cdf['chain_type']==params['chain_type']]
+        print(params['chain_type'], end=': ')
+        print('chains=', len(cdf['chain_id'].unique()), end='\t')
+        print('pdb=', len(cdf['pdb_id'].unique()))
+
+        values = cdf['allele_name'].value_counts()
+        values = values.reset_index()
+        topn = params['n']
+        counts = pd.DataFrame(values.iloc[:topn,:])
+        other = sum(values['count'][topn:])
+        if other > 0:
+            topn += 1
+            counts.loc[topn] = ['Others', other]
+
+        # draw pie
+        wedges, texts, autotexts = ax.pie(
+            counts['count'],
+            labels=counts['allele_name'],
+            autopct='%1.f%%',
+            pctdistance=params.get('pctdistance', .5),
+            explode=params['explode'],
+            labeldistance=params.get('labeldistance', 1.0),
+            colors=['lightgrey',] * topn,
+        )
+        # set labels
+        for i, text in enumerate(texts):
+            text.set_rotation(0)
+            text.set_horizontalalignment('right')
+            text.set_fontsize(8)
+            texts[i].set_position(params['text_pos'][i])
+        # return counts

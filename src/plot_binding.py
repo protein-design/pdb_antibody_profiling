@@ -40,7 +40,8 @@ class PlotBinding:
         ax.text(-10, 10.6, f"95% = {q}", fontsize=8, ha='right')
 
     def precision_recall(self, ax, col):
-        droc = self.data[col]
+        droc = self.data[col].dropna()
+        print('total number: ', len(droc))
         precisions, recalls, thresholds = precision_recall_curve(
             droc['y'], -droc[col]
         )
@@ -48,12 +49,17 @@ class PlotBinding:
             color='black', linestyle='-')
         ax.plot(thresholds, precisions[:-1], label='Precision',
             color='black', linestyle='--')
-        ax.axvline(-10, linestyle='--', color='grey')
-        ax.axvline(-20, linestyle='--', color='grey')
-        ax.set_xlim(-100, 0)
-        ax.set_xlabel('Minus minimum distance of Ca, -$\AA$')
-        ax.legend(loc='center left', fontsize=8)
+        ax.set_xlim(-50, 0)
+        ax.set_xlabel('Minimum distance of Ca, -$\AA$')
+        ax.legend(loc='lower left', fontsize=8)
 
+        stat = pd.DataFrame({'precision': precisions[:-1], 'recall': recalls[:-1],
+            col: -thresholds,})
+        for threshold in (5, 10, 15):
+            stat1 = stat[stat[col]<=threshold].sort_values(col)
+            print(threshold, len(stat1), stat1.iloc[-1].to_dict())
+            ax.axvline(-threshold, linestyle='--', color='grey')
+    
     def roc(self, ax, col):
         droc = self.data[col]
         fpr, tpr, thresholds = roc_curve(droc['y'], -droc[col])
