@@ -150,7 +150,6 @@ class PlotPdb:
         plt.gca().invert_yaxis()
         return ax
 
-
     def violin_equal_rmsd(self, ax):
         sns.violinplot(self.df, y='chain_type', x='rmsd', ax=ax,
             fill=False, color='black')

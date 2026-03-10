@@ -209,3 +209,20 @@ class PlotPredict:
         print(q2)
         ax.axhline(q2, linestyle='--', color='grey')
         return ax
+
+    def hist_rmsd(self, ax, chain_type, quantiles:list=None):
+        sub = self.df[self.df['chain_type']==chain_type].dropna()
+        print(f"Number of {chain_type} chain: {len(sub)}")
+        sns.histplot(sub, x='rmsd', ax=ax, bins=100, stat='percent', color='black')
+        ax.set_xlim(-1, 40)
+        ax.set_ylim(0, 50)
+        ax.set_xlabel('RMSD')
+        ax.set_ylabel('Percentage, %')
+
+        if quantiles is None:
+            quantiles = [.95,]
+        for quant in quantiles:
+            q = np.quantile(sub['rmsd'], quant)
+            ax.axvline(q, color='grey', linestyle='--')
+            ax.text(q+1, 10, round(q, 2))
+        return ax
